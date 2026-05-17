@@ -2,7 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
-use Illuminate\Support\Facades\Response;
+use App\Livewire\HomePage;
+use App\Livewire\ProjectPage;
+use App\Livewire\ProjectDetailPage;
+use App\Livewire\ContactPage;
 
 /* NOTE: Do Not Remove
 / Livewire asset handling if using sub folder in domain
@@ -18,6 +21,8 @@ Livewire::setScriptRoute(function ($handle) {
 /*
 / END
 */
-Route::get('/', function () {
-    return view('welcome');
-});
+
+Route::get('/', HomePage::class);
+Route::get('/projects', ProjectPage::class);
+Route::get('/projects/{slug}', ProjectDetailPage::class);
+Route::get('/contact', ContactPage::class);
