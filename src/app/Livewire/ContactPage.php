@@ -7,17 +7,28 @@ use Livewire\Component;
 
 class ContactPage extends Component
 {
-    public string $name = '';
-    public string $email = '';
+    public string $name    = '';
+    public string $email   = '';
     public string $message = '';
+    public bool   $success = false;
 
-    public function submit()
+    protected array $rules = [
+        'name'    => 'required|min:2|max:100',
+        'email'   => 'required|email|max:100',
+        'message' => 'required|min:10|max:2000',
+    ];
+
+    protected array $messages = [
+        'name.required'    => 'Nama wajib diisi.',
+        'email.required'   => 'Email wajib diisi.',
+        'email.email'      => 'Format email tidak valid.',
+        'message.required' => 'Pesan wajib diisi.',
+        'message.min'      => 'Pesan minimal 10 karakter.',
+    ];
+
+    public function submit(): void
     {
-        $this->validate([
-            'name'    => 'required',
-            'email'   => 'required|email',
-            'message' => 'required',
-        ]);
+        $this->validate();
 
         Contact::create([
             'name'    => $this->name,
@@ -25,7 +36,8 @@ class ContactPage extends Component
             'message' => $this->message,
         ]);
 
-        $this->reset();
+        $this->reset(['name', 'email', 'message']);
+        $this->success = true;
     }
 
     public function render()

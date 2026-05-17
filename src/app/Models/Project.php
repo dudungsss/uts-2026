@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Project extends Model
 {
@@ -16,7 +17,11 @@ class Project extends Model
         'is_featured',
     ];
 
-    public function report()
+    protected $casts = [
+        'is_featured' => 'boolean',
+    ];
+
+    public function report(): HasOne
     {
         return $this->hasOne(ProjectReport::class);
     }
