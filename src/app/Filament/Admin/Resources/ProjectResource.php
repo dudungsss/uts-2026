@@ -7,11 +7,6 @@ use App\Filament\Admin\Resources\ProjectResource\RelationManagers;
 use App\Models\Project;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -28,13 +23,26 @@ class ProjectResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('title')->required(),
-                TextInput::make('slug')->required(),
-                Textarea::make('short_description')->required(),
-                Textarea::make('tech_stack')->required(),
-                TextInput::make('status')->required(),
-                Toggle::make('is_featured'),
-                FileUpload::make('thumbnail')->image()->directory('thumbnails'),    
+                Forms\Components\TextInput::make('title')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('slug')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\Textarea::make('short_description')
+                    ->required()
+                    ->columnSpanFull(),
+                Forms\Components\Textarea::make('tech_stack')
+                    ->required()
+                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('status')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('thumbnail')
+                    ->maxLength(255)
+                    ->default(null),
+                Forms\Components\Toggle::make('is_featured')
+                    ->required(),
             ]);
     }
 
@@ -42,7 +50,24 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('title')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('slug')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('thumbnail')
+                    ->searchable(),
+                Tables\Columns\IconColumn::make('is_featured')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

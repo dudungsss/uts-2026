@@ -1,4 +1,4 @@
-<x-layouts.app :title="$project->title . ' — Yuliadhy Nugraha'">
+{{-- <x-layouts.app :title="$project->title . ' — Yuliadhy Nugraha'"> --}}
 <div>
 <style>
 .detail-hero{padding:3rem 2rem 2rem;max-width:1060px;margin:0 auto;}
@@ -282,5 +282,6 @@
     </div>
   </div>
   @endif
+
 </div>
-</x-layouts.app>
+{{-- </x-layouts.app> --}}

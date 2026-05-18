@@ -30,12 +30,21 @@ class ProjectSeeder extends Seeder
         ]);
 
         Project::create([
-            'title'             => 'Admin Panel Filament V3',
-            'slug'              => 'admin-panel-filament-v3',
+            'title'             => 'Tech-Hire',
+            'slug'              => 'tech-hire',
             'short_description' => 'CRUD admin panel menggunakan Filament V3 untuk mengelola projects, reports, dan contacts. Dilengkapi dengan fitur upload gambar dan filter.',
-            'tech_stack'        => 'Laravel,Filament V3,MariaDB',
-            'status'            => 'done',
+            'tech_stack'        => 'Laravel,Filament V3,Livewire,MariaDB,Docker,TailwindCSS',
+            'status'            => 'Progress',
             'is_featured'       => true,
+        ]);
+
+        ProjectReport::create([
+            'project_id'          => 2,
+            'problem_analysis'    => "Perusahaan membutuhkan sistem untuk mengelola data kandidat dan proses rekrutmen secara efisien.\nSistem harus memungkinkan admin untuk melakukan CRUD data kandidat, posisi, dan laporan proses rekrutmen.\nLaporan teknis diperlukan untuk mendokumentasikan analisis masalah, kebutuhan sistem, fitur utama, dan arsitektur solusi.",
+            'system_requirements' => "Admin panel dengan CRUD untuk kandidat, posisi, dan laporan rekrutmen\nFitur upload dokumen kandidat (CV)\nFilter data berdasarkan status rekrutmen\nLaporan teknis terstruktur untuk dokumentasi",
+            'main_features'       => "CRUD Kandidat via Filament Admin\nUpload CV Kandidat\nFilter berdasarkan status rekrutmen\nLaporan teknis per proses rekrutmen\nUI yang responsif dan user-friendly",
+            'architecture'        => "Aplikasi dibangun dengan Laravel menggunakan arsitektur MVC.\nLivewire digunakan untuk membuat komponen interaktif tanpa JavaScript manual.\nFilament V3 sebagai admin panel untuk mengelola semua data.\nDatabase MariaDB dijalankan dalam container Docker.",
+            'progress_status'     => 'In Development — 40%',
         ]);
     }
 }

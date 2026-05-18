@@ -3,8 +3,10 @@
 namespace App\Livewire;
 
 use App\Models\Contact;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('components.layouts.app')]
 class ContactPage extends Component
 {
     public string $name    = '';

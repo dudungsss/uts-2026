@@ -3,9 +3,10 @@
 namespace App\Livewire;
 
 use App\Models\Project;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+#[Layout('components.layouts.app')]
 class ProjectDetailPage extends Component
 {
     public Project $project;
