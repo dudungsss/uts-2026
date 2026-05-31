@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         :root{
@@ -196,6 +197,7 @@
           .hero-stats{gap:1.5rem;flex-wrap:wrap;}
         }
     </style>
+
     @livewireStyles
 </head>
 <body>
@@ -204,15 +206,59 @@
     <div class="orb orb2"></div>
 
     <nav>
-        <a href="/" class="logo"><em>~/</em>github.com/dudungsss</a>
+        @php
+            $githubContact = \App\Models\Contact::query()
+                ->where('contact_type', 'github')
+                ->where('is_system_contact', true)
+                ->orderBy('display_order')
+                ->first();
+
+            $githubUrl = $githubContact?->url ?? 'https://github.com/dudungsss';
+            $githubName = $githubContact?->name ?? 'dudungsss';
+        @endphp
+
+        {{-- <a 
+            href="{{ $githubUrl }}" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="logo"
+        >
+            <em>~/</em>github.com/{{ $githubName }}
+        </a> --}}
+
+        <div class="nav-left"></div>
+
         <div class="nav-links">
             <a href="/" class="nl {{ request()->is('/') ? 'active' : '' }}">
-                @if(request()->is('/')) <span class="nav-dot"></span> @endif home
+                @if(request()->is('/'))
+                    <span class="nav-dot"></span>
+                @endif
+                home
             </a>
-            <a href="/projects" class="nl {{ request()->is('projects*') ? 'active' : '' }}">projects</a>
-            <a href="/contact" class="nl {{ request()->is('contact') ? 'active' : '' }}">contact</a>
+
+            <a href="/projects" class="nl {{ request()->is('projects*') ? 'active' : '' }}">
+                @if(request()->is('projects*'))
+                    <span class="nav-dot"></span>
+                @endif
+                projects
+            </a>
+
+            <a href="/contact" class="nl {{ request()->is('contact') ? 'active' : '' }}">
+                @if(request()->is('contact'))
+                    <span class="nav-dot"></span>
+                @endif
+                contact
+            </a>
         </div>
-        <a href="/contact" class="hire-btn">open</a>
+
+        <a 
+            href="{{ $githubUrl }}" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="hire-btn"
+        >
+            GitHub
+        </a>
     </nav>
 
     <main>

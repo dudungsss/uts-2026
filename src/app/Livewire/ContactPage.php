@@ -33,9 +33,11 @@ class ContactPage extends Component
         $this->validate();
 
         Contact::create([
-            'name'    => $this->name,
-            'email'   => $this->email,
-            'message' => $this->message,
+            'name'           => $this->name,
+            'email'          => $this->email,
+            'message'        => $this->message,
+            'contact_type'   => 'message',
+            'is_system_contact' => false,
         ]);
 
         $this->reset(['name', 'email', 'message']);
@@ -44,6 +46,12 @@ class ContactPage extends Component
 
     public function render()
     {
-        return view('livewire.contact-page');
+        $socialContacts = Contact::where('is_system_contact', true)
+            ->orderBy('display_order')
+            ->get();
+
+        return view('livewire.contact-page', [
+            'socialContacts' => $socialContacts,
+        ]);
     }
 }

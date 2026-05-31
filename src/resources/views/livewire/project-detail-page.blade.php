@@ -1,4 +1,52 @@
-{{-- <x-layouts.app :title="$project->title . ' — Yuliadhy Nugraha'"> --}}
+{{-- <x-layouts.app :title="$project->title . ' — ' . ($profile?->name ?? '')"> --}}
+@php
+  $profileData = $profile ?? null;
+
+  $backUrl = $profileData?->projects_button_url ?? '/projects';
+  $backText = $profileData?->project_detail_back_text ?? '← kembali ke projects';
+
+  $techStackList = $project->tech_stack_list ?? array_values(array_filter(array_map(
+      'trim',
+      explode(',', $project->tech_stack ?? '')
+  )));
+
+  $thumbnailUrl = $project->thumbnail_url ?? ($project->thumbnail ? asset('storage/' . $project->thumbnail) : null);
+
+  $statusClass = $project->status_class ?? match($project->status) {
+      'active' => 'active',
+      'done', 'completed' => 'done',
+      default => 'wip',
+  };
+
+  $reportSectionTitles = [
+      'problem' => $profileData?->detail_problem_title ?? 'Analisis Masalah',
+      'requirements' => $profileData?->detail_requirements_title ?? 'Kebutuhan Sistem',
+      'features' => $profileData?->detail_features_title ?? 'Fitur Utama',
+      'architecture' => $profileData?->detail_architecture_title ?? 'Arsitektur & Tech Stack',
+      'erd' => $profileData?->detail_erd_title ?? 'ERD — Entity Relationship Diagram',
+      'flowchart' => $profileData?->detail_flowchart_title ?? 'Flowchart Sistem',
+      'progress' => $profileData?->detail_progress_title ?? 'Progress Status',
+  ];
+
+  $nonFunctionalItems = array_values(array_filter(array_map(
+      'trim',
+      explode("\n", $report?->non_functional_requirements ?? '')
+  )));
+
+  $architectureFlowItems = array_values(array_filter(array_map(
+      'trim',
+      explode("\n", $report?->architecture_flow ?? '')
+  )));
+
+  $flowchartSteps = array_values(array_filter(array_map(
+      'trim',
+      explode("\n", $report?->flowchart_steps ?? '')
+  )));
+
+  $emptyReportText = $profileData?->detail_empty_report_text ?? 'Laporan untuk project ini belum dibuat.';
+  $emptyReportHint = $profileData?->detail_empty_report_hint ?? 'Tambahkan via Filament Admin → Project Reports';
+@endphp
+
 <div>
 <style>
 .detail-hero{padding:3rem 2rem 2rem;max-width:1060px;margin:0 auto;}
@@ -38,250 +86,332 @@
 .feat-item .ft{font-size:12px;font-weight:600;margin-bottom:3px;}
 .feat-item .fd{font-size:11px;color:var(--muted);}
 
-.arch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
-.arch-item{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:.9rem;text-align:center;}
-.arch-icon{font-size:22px;margin-bottom:6px;}
-.arch-name{font-family:var(--mono);font-size:11px;color:var(--txt);font-weight:700;}
-.arch-role{font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:2px;}
-
 .diagram-placeholder{background:var(--surf2);border:1px dashed var(--bdr2);border-radius:8px;
   min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
 .diagram-placeholder i{font-size:32px;color:var(--muted2);}
 .diagram-placeholder span{font-family:var(--mono);font-size:11px;color:var(--muted2);letter-spacing:.07em;}
 .diagram-placeholder small{font-family:var(--mono);font-size:9px;color:var(--muted2);opacity:.6;}
 .diagram-img{width:100%;border-radius:8px;border:1px solid var(--bdr);}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-
-.erd-mini{width:100%;font-size:11px;}
-.erd-table{background:var(--surf);border:1px solid var(--bdr2);border-radius:6px;overflow:hidden;margin-bottom:0;}
-.erd-th{background:rgba(59,130,246,.12);padding:6px 10px;font-family:var(--mono);font-size:10px;
-  color:var(--acc2);letter-spacing:.05em;border-bottom:1px solid var(--bdr2);font-weight:700;}
-.erd-tr{display:flex;gap:0;border-bottom:1px solid var(--bdr);}
-.erd-tr:last-child{border-bottom:none;}
-.erd-pk{font-family:var(--mono);font-size:9px;color:var(--amber);padding:5px 8px;min-width:28px;
-  border-right:1px solid var(--bdr);display:flex;align-items:center;}
-.erd-field{font-family:var(--mono);font-size:9px;color:var(--txt);padding:5px 8px;flex:1;}
-.erd-type{font-family:var(--mono);font-size:9px;color:var(--muted2);padding:5px 8px;text-align:right;}
-.erd-rel{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 0;
-  font-family:var(--mono);font-size:10px;color:var(--muted2);}
 
 .progress-section{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:1.25rem;}
 .prog-label{font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem;}
 .prog-val{font-family:var(--mono);font-size:1.1rem;color:var(--acc2);font-weight:700;margin-bottom:.6rem;}
 .prog-bar{height:6px;background:var(--surf);border-radius:3px;overflow:hidden;}
 .prog-fill{height:100%;background:var(--acc);border-radius:3px;}
-.timeline{margin-top:1rem;}
-.tl-item{display:flex;gap:10px;margin-bottom:.8rem;font-size:12px;color:var(--muted);}
-.tl-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);flex-shrink:0;margin-top:3px;}
-.tl-dot.done{background:var(--green);}
-.tl-dot.todo{background:var(--muted2);}
 
-@media(max-width:700px){.detail-header{grid-template-columns:1fr;}.two-col{grid-template-columns:1fr;}.req-grid{grid-template-columns:1fr;}}
+@media(max-width:700px){.detail-header{grid-template-columns:1fr;}.req-grid{grid-template-columns:1fr;}}
 </style>
 
   <div class="detail-hero">
-    <a href="/projects" class="back-btn">← kembali ke projects</a>
+    <a href="{{ $backUrl }}" class="back-btn">
+      {{ $backText }}
+    </a>
+
     <div class="detail-header">
       <div>
-        <div class="tags" style="margin-bottom:1rem;">
-          @foreach(explode(',', $project->tech_stack) as $tech)
-            <span class="tag">{{ trim($tech) }}</span>
-          @endforeach
-          @if($project->is_featured)
-            <span class="tag g">featured</span>
-          @endif
-        </div>
-        <div class="detail-title">{{ $project->title }}</div>
-        <div class="detail-desc">{{ $project->short_description }}</div>
+        @if(count($techStackList) > 0 || $project->is_featured)
+          <div class="tags" style="margin-bottom:1rem;">
+            @foreach($techStackList as $tech)
+              <span class="tag">{{ $tech }}</span>
+            @endforeach
+
+            @if($project->is_featured)
+              <span class="tag g">
+                {{ $profileData?->featured_label ?? 'featured' }}
+              </span>
+            @endif
+          </div>
+        @endif
+
+        @if($project->title)
+          <div class="detail-title">
+            {{ $project->title }}
+          </div>
+        @endif
+
+        @if($project->short_description)
+          <div class="detail-desc">
+            {{ $project->short_description }}
+          </div>
+        @endif
       </div>
+
       <div class="detail-meta">
-        <div class="meta-row">
-          <div class="meta-label">status</div>
-          @php
-            $statusClass = match($project->status) {
-              'active' => 'active', 'done','completed' => 'done', default => 'wip',
-            };
-          @endphp
-          <span class="badge {{ $statusClass }}" style="display:inline-block;width:fit-content;margin-top:4px;">{{ $project->status }}</span>
-        </div>
-        <div class="meta-row">
-          <div class="meta-label">tech stack</div>
-          <div class="meta-val">{{ $project->tech_stack }}</div>
-        </div>
-        <div class="meta-row">
-          <div class="meta-label">dibuat</div>
-          <div class="meta-val">{{ $project->created_at->format('M Y') }}</div>
-        </div>
+        @if($project->status)
+          <div class="meta-row">
+            <div class="meta-label">
+              {{ $profileData?->detail_status_label ?? 'status' }}
+            </div>
+
+            <span class="badge {{ $statusClass }}" style="display:inline-block;width:fit-content;margin-top:4px;">
+              {{ $project->status }}
+            </span>
+          </div>
+        @endif
+
+        @if($project->tech_stack)
+          <div class="meta-row">
+            <div class="meta-label">
+              {{ $profileData?->detail_tech_stack_label ?? 'tech stack' }}
+            </div>
+
+            <div class="meta-val">
+              {{ $project->tech_stack }}
+            </div>
+          </div>
+        @endif
+
+        @if($project->created_at)
+          <div class="meta-row">
+            <div class="meta-label">
+              {{ $profileData?->detail_created_label ?? 'dibuat' }}
+            </div>
+
+            <div class="meta-val">
+              {{ $project->created_at->format('M Y') }}
+            </div>
+          </div>
+        @endif
+
         @if($project->is_featured)
-        <div class="meta-row">
-          <div class="meta-label">featured</div>
-          <div class="meta-val" style="color:var(--green);">★ yes</div>
-        </div>
+          <div class="meta-row">
+            <div class="meta-label">
+              {{ $profileData?->featured_label ?? 'featured' }}
+            </div>
+
+            <div class="meta-val" style="color:var(--green);">
+              ★ {{ $profileData?->featured_yes_text ?? 'yes' }}
+            </div>
+          </div>
         @endif
       </div>
     </div>
   </div>
 
   @if($report)
-  <div class="detail-body">
-    <div class="detail-sections">
+    <div class="detail-body">
+      <div class="detail-sections">
 
-      {{-- 01 Problem Analysis --}}
-      <div class="ds">
-        <div class="ds-head"><div class="ds-num">01</div><div class="ds-htitle">Analisis Masalah</div></div>
-        <div class="ds-body">
-          @foreach(explode("\n", $report->problem_analysis) as $line)
-            @if(trim($line)) <p>{{ trim($line) }}</p> @endif
-          @endforeach
-        </div>
-      </div>
+        {{-- 01 Problem Analysis --}}
+        @if($report->problem_analysis)
+          <div class="ds">
+            <div class="ds-head">
+              <div class="ds-num">01</div>
+              <div class="ds-htitle">{{ $reportSectionTitles['problem'] }}</div>
+            </div>
 
-      {{-- 02 System Requirements --}}
-      <div class="ds">
-        <div class="ds-head"><div class="ds-num">02</div><div class="ds-htitle">Kebutuhan Sistem</div></div>
-        <div class="ds-body">
-          <div class="req-grid">
-            <div class="req-box">
-              <h4>Functional</h4>
-              @foreach(explode("\n", $report->system_requirements) as $line)
-                @if(trim($line)) <div class="req-item">{{ trim($line) }}</div> @endif
+            <div class="ds-body">
+              @foreach(explode("\n", $report->problem_analysis) as $line)
+                @if(trim($line))
+                  <p>{{ trim($line) }}</p>
+                @endif
               @endforeach
             </div>
-            <div class="req-box">
-              <h4>Non-Functional</h4>
-              <div class="req-item">Dark mode aesthetic UI</div>
-              <div class="req-item">Responsive layout</div>
-              <div class="req-item">Docker containerized</div>
-              <div class="req-item">Filament admin panel</div>
+          </div>
+        @endif
+
+        {{-- 02 System Requirements --}}
+        @if($report->system_requirements || count($nonFunctionalItems) > 0)
+          <div class="ds">
+            <div class="ds-head">
+              <div class="ds-num">02</div>
+              <div class="ds-htitle">{{ $reportSectionTitles['requirements'] }}</div>
+            </div>
+
+            <div class="ds-body">
+              <div class="req-grid">
+                @if($report->system_requirements)
+                  <div class="req-box">
+                    <h4>{{ $profileData?->functional_label ?? 'Functional' }}</h4>
+
+                    @foreach(explode("\n", $report->system_requirements) as $line)
+                      @if(trim($line))
+                        <div class="req-item">{{ trim($line) }}</div>
+                      @endif
+                    @endforeach
+                  </div>
+                @endif
+
+                @if(count($nonFunctionalItems) > 0)
+                  <div class="req-box">
+                    <h4>{{ $profileData?->non_functional_label ?? 'Non-Functional' }}</h4>
+
+                    @foreach($nonFunctionalItems as $item)
+                      <div class="req-item">{{ $item }}</div>
+                    @endforeach
+                  </div>
+                @endif
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        @endif
 
-      {{-- 03 Main Features --}}
-      <div class="ds">
-        <div class="ds-head"><div class="ds-num">03</div><div class="ds-htitle">Fitur Utama</div></div>
-        <div class="ds-body">
-          <div class="feat-grid">
-            @foreach(explode("\n", $report->main_features) as $line)
-              @if(trim($line))
-              <div class="feat-item">
-                <i class="ti ti-check" aria-hidden="true"></i>
-                <div class="ft">{{ trim($line) }}</div>
+        {{-- 03 Main Features --}}
+        @if($report->main_features)
+          <div class="ds">
+            <div class="ds-head">
+              <div class="ds-num">03</div>
+              <div class="ds-htitle">{{ $reportSectionTitles['features'] }}</div>
+            </div>
+
+            <div class="ds-body">
+              <div class="feat-grid">
+                @foreach(explode("\n", $report->main_features) as $line)
+                  @if(trim($line))
+                    <div class="feat-item">
+                      <i class="ti ti-check" aria-hidden="true"></i>
+                      <div class="ft">{{ trim($line) }}</div>
+                    </div>
+                  @endif
+                @endforeach
               </div>
+            </div>
+          </div>
+        @endif
+
+        {{-- 04 Architecture --}}
+        @if($report->architecture || count($architectureFlowItems) > 0)
+          <div class="ds">
+            <div class="ds-head">
+              <div class="ds-num">04</div>
+              <div class="ds-htitle">{{ $reportSectionTitles['architecture'] }}</div>
+            </div>
+
+            <div class="ds-body">
+              @if($report->architecture)
+                @foreach(explode("\n", $report->architecture) as $line)
+                  @if(trim($line))
+                    <p>{{ trim($line) }}</p>
+                  @endif
+                @endforeach
               @endif
-            @endforeach
-          </div>
-        </div>
-      </div>
 
-      {{-- 04 Architecture --}}
-      <div class="ds">
-        <div class="ds-head"><div class="ds-num">04</div><div class="ds-htitle">Arsitektur & Tech Stack</div></div>
-        <div class="ds-body">
-          @foreach(explode("\n", $report->architecture) as $line)
-            @if(trim($line)) <p>{{ trim($line) }}</p> @endif
-          @endforeach
-          <div style="margin-top:1rem;padding:1rem;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;">
-            <div style="font-family:var(--mono);font-size:10px;color:var(--acc);margin-bottom:6px;letter-spacing:.05em;">ARSITEKTUR ALUR</div>
-            <div style="font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-              <span style="color:var(--txt);">Browser</span><span style="color:var(--acc);">→</span>
-              <span style="color:var(--txt);">Route</span><span style="color:var(--acc);">→</span>
-              <span style="color:var(--txt);">Livewire Component</span><span style="color:var(--acc);">→</span>
-              <span style="color:var(--txt);">Eloquent Model</span><span style="color:var(--acc);">→</span>
-              <span style="color:var(--txt);">MariaDB</span><span style="color:var(--acc);">→</span>
-              <span style="color:var(--txt);">Blade View</span>
+              @if(count($architectureFlowItems) > 0)
+                <div style="margin-top:1rem;padding:1rem;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;">
+                  <div style="font-family:var(--mono);font-size:10px;color:var(--acc);margin-bottom:6px;letter-spacing:.05em;">
+                    {{ $profileData?->architecture_flow_label ?? 'ARSITEKTUR ALUR' }}
+                  </div>
+
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                    @foreach($architectureFlowItems as $index => $item)
+                      <span style="color:var(--txt);">{{ $item }}</span>
+
+                      @if(! $loop->last)
+                        <span style="color:var(--acc);">→</span>
+                      @endif
+                    @endforeach
+                  </div>
+                </div>
+              @endif
             </div>
           </div>
-        </div>
-      </div>
+        @endif
 
-      {{-- 05 ERD --}}
-      <div class="ds">
-        <div class="ds-head"><div class="ds-num">05</div><div class="ds-htitle">ERD — Entity Relationship Diagram</div></div>
-        <div class="ds-body">
-          @if($report->erd_image)
-            <img src="/storage/{{ $report->erd_image }}" alt="ERD" class="diagram-img">
-          @else
-            <div class="diagram-placeholder">
-              <i class="ti ti-photo" aria-hidden="true"></i>
-              <span>[ gambar ERD dari database ]</span>
-              <small>upload via Filament Admin → ProjectReport → erd_image</small>
+        {{-- 05 ERD --}}
+        @if($report->erd_image)
+          <div class="ds">
+            <div class="ds-head">
+              <div class="ds-num">05</div>
+              <div class="ds-htitle">{{ $reportSectionTitles['erd'] }}</div>
             </div>
-          @endif
-        </div>
-      </div>
 
-      {{-- 06 Flowchart --}}
-      <div class="ds">
-        <div class="ds-head"><div class="ds-num">06</div><div class="ds-htitle">Flowchart Sistem</div></div>
-        <div class="ds-body">
-          <div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:1.25rem;margin-bottom:1rem;">
-            <div style="font-family:var(--mono);font-size:10px;color:var(--acc);margin-bottom:10px;letter-spacing:.05em;">ALUR SISTEM — USER JOURNEY</div>
-            <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:11px;">
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="background:rgba(59,130,246,.15);border:1px solid var(--bdr2);border-radius:4px;padding:4px 10px;color:var(--acc2);">User Buka Website</div>
-                <span style="color:var(--muted2);">↓</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:4px;padding:4px 10px;color:var(--txt);">Home Page — Hero + Tech Stack</div>
-                <span style="color:var(--muted2);">↓</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:4px;padding:4px 10px;color:var(--txt);">Projects Page — Daftar Project</div>
-                <span style="color:var(--muted2);">↓</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="background:rgba(52,211,153,.08);border:1px solid var(--green-bdr);border-radius:4px;padding:4px 10px;color:var(--green);">Detail Project — Laporan Awal ★</div>
-                <span style="color:var(--muted2);">↓</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:4px;padding:4px 10px;color:var(--txt);">Contact Form → Simpan ke DB</div>
-              </div>
+            <div class="ds-body">
+              <img src="{{ asset('storage/' . $report->erd_image) }}" alt="{{ $reportSectionTitles['erd'] }}" class="diagram-img">
             </div>
           </div>
-          @if($report->flowchart_image)
-            <img src="/storage/{{ $report->flowchart_image }}" alt="Flowchart" class="diagram-img">
-          @else
-            <div class="diagram-placeholder">
-              <i class="ti ti-git-branch" aria-hidden="true"></i>
-              <span>[ gambar flowchart dari database ]</span>
-              <small>upload via Filament Admin → ProjectReport → flowchart_image</small>
+        @endif
+
+        {{-- 06 Flowchart --}}
+        @if($report->flowchart_image || count($flowchartSteps) > 0)
+          <div class="ds">
+            <div class="ds-head">
+              <div class="ds-num">06</div>
+              <div class="ds-htitle">{{ $reportSectionTitles['flowchart'] }}</div>
             </div>
-          @endif
-        </div>
-      </div>
 
-      {{-- 07 Progress --}}
-      <div class="ds">
-        <div class="ds-head"><div class="ds-num">07</div><div class="ds-htitle">Progress Status</div></div>
-        <div class="ds-body">
-          <div class="progress-section">
-            <div class="prog-label">overall progress</div>
-            <div class="prog-val">{{ $report->progress_status }}</div>
-            @php
-              preg_match('/(\d+)%/', $report->progress_status, $m);
-              $pct = $m[1] ?? 50;
-            @endphp
-            <div class="prog-bar"><div class="prog-fill" style="width:{{ $pct }}%;"></div></div>
-          </div>
-          <div style="margin-top:.8rem;font-family:var(--mono);font-size:10px;color:var(--muted2);text-align:right;">
-            * status ini diupdate dinamis via Filament Admin Panel — tanpa edit kode
-          </div>
-        </div>
-      </div>
+            <div class="ds-body">
+              @if(count($flowchartSteps) > 0)
+                <div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:1.25rem;margin-bottom:1rem;">
+                  <div style="font-family:var(--mono);font-size:10px;color:var(--acc);margin-bottom:10px;letter-spacing:.05em;">
+                    {{ $profileData?->flowchart_steps_label ?? 'ALUR SISTEM' }}
+                  </div>
 
+                  <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:11px;">
+                    @foreach($flowchartSteps as $step)
+                      <div style="display:flex;align-items:center;gap:8px;">
+                        <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:4px;padding:4px 10px;color:var(--txt);">
+                          {{ $step }}
+                        </div>
+
+                        @if(! $loop->last)
+                          <span style="color:var(--muted2);">↓</span>
+                        @endif
+                      </div>
+                    @endforeach
+                  </div>
+                </div>
+              @endif
+
+              @if($report->flowchart_image)
+                <img src="{{ asset('storage/' . $report->flowchart_image) }}" alt="{{ $reportSectionTitles['flowchart'] }}" class="diagram-img">
+              @endif
+            </div>
+          </div>
+        @endif
+
+        {{-- 07 Progress --}}
+        @if($report->progress_status)
+          <div class="ds">
+            <div class="ds-head">
+              <div class="ds-num">07</div>
+              <div class="ds-htitle">{{ $reportSectionTitles['progress'] }}</div>
+            </div>
+
+            <div class="ds-body">
+              <div class="progress-section">
+                <div class="prog-label">
+                  {{ $profileData?->overall_progress_label ?? 'overall progress' }}
+                </div>
+
+                <div class="prog-val">
+                  {{ $report->progress_status }}
+                </div>
+
+                @php
+                  preg_match('/(\d+)%/', $report->progress_status, $m);
+                  $pct = $m[1] ?? 0;
+                @endphp
+
+                <div class="prog-bar">
+                  <div class="prog-fill" style="width:{{ $pct }}%;"></div>
+                </div>
+              </div>
+
+              @if($profileData?->progress_note)
+                <div style="margin-top:.8rem;font-family:var(--mono);font-size:10px;color:var(--muted2);text-align:right;">
+                  {{ $profileData->progress_note }}
+                </div>
+              @endif
+            </div>
+          </div>
+        @endif
+
+      </div>
     </div>
-  </div>
   @else
-  <div class="detail-body">
-    <div style="font-family:var(--mono);font-size:12px;color:var(--muted2);padding:2rem;background:var(--surf);
-      border:1px dashed var(--bdr2);border-radius:10px;text-align:center;">
-      Laporan untuk project ini belum dibuat.<br>
-      <small style="opacity:.6;">Tambahkan via Filament Admin → Project Reports</small>
-    </div>
-  </div>
-  @endif
+    <div class="detail-body">
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted2);padding:2rem;background:var(--surf);
+        border:1px dashed var(--bdr2);border-radius:10px;text-align:center;">
+        {{ $emptyReportText }}
 
+        @if($emptyReportHint)
+          <br>
+          <small style="opacity:.6;">
+            {{ $emptyReportHint }}
+          </small>
+        @endif
+      </div>
+    </div>
+  @endif
 </div>
 {{-- </x-layouts.app> --}}

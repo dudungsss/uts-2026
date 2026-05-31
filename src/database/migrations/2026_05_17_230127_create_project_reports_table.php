@@ -13,14 +13,27 @@ return new class extends Migration
     {
         Schema::create('project_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+
+            $table->foreignId('project_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->longText('problem_analysis');
             $table->longText('system_requirements');
+            $table->longText('non_functional_requirements')->nullable();
+
             $table->longText('main_features');
+
             $table->longText('architecture');
+            $table->longText('architecture_flow')->nullable();
+
             $table->string('erd_image')->nullable();
+
+            $table->longText('flowchart_steps')->nullable();
             $table->string('flowchart_image')->nullable();
+
             $table->string('progress_status');
+
             $table->timestamps();
         });
     }

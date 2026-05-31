@@ -9,12 +9,22 @@ class ProjectReport extends Model
 {
     protected $fillable = [
         'project_id',
+
         'problem_analysis',
+
         'system_requirements',
+        'non_functional_requirements',
+
         'main_features',
+
         'architecture',
+        'architecture_flow',
+
         'erd_image',
+
+        'flowchart_steps',
         'flowchart_image',
+
         'progress_status',
     ];
 
