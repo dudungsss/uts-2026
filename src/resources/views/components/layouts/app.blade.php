@@ -266,7 +266,16 @@
     </main>
 
     <footer>
-        <p>built with <span>Laravel + Filament V3 + Livewire + MariaDB + Docker</span> &nbsp;|&nbsp; © 2025 <span>Yuliadhy Nugraha</span> &nbsp;|&nbsp; CSF412 UTS</p>
+      <p>
+        built with 
+        <span>Laravel + Filament V3 + Livewire + MariaDB + Docker</span>
+        &nbsp;|&nbsp;
+        © 2025 <span>Yuliadhy Nugraha</span>
+        &nbsp;|&nbsp;
+        Learning Project License
+        &nbsp;|&nbsp;
+        CSF412 UTS
+      </p>
     </footer>
 
     @livewireScripts
